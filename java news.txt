@@ -1,0 +1,825 @@
+java page 1 - adapter///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.content.Context;
+import android.content.Intent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+
+import java.util.ArrayList;
+
+public class Adapter extends RecyclerView.Adapter<ViewHolder> {
+
+    Context context;
+    ArrayList<ModelClass> modelClassArrayList;
+
+    public Adapter(Context context, ArrayList<ModelClass> modelClassArrayList) {
+    }
+
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(context).inflate(R.layout.layout_item,null,false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
+        holder.cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context,webView.class);
+                intent.putExtra("url",modelClassArrayList.get(position).getUrl());
+                context.startActivity(intent);
+
+
+            }
+        });
+
+        holder.mtime.setText("Published At:-"+modelClassArrayList.get(position).getPublishedAt());
+        holder.mauthor.setText(modelClassArrayList.get(position).getAuthor());
+        holder.mheading.setText(modelClassArrayList.get(position).getTitle());
+        holder.mcontent.setText(modelClassArrayList.get(position).getDescription());
+        Glide.with(context).load(modelClassArrayList.get(position).getUrlToImage()).into(holder.imageView);
+
+    }
+
+    @Override
+    public int getItemCount() {
+        return  modelClassArrayList.size();
+    }
+
+}
+
+
+java page 2 - apiinterface///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import retrofit2.Call;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
+
+public interface ApiInterface {
+
+    String BASE_URL=("https://newsapi.org/v2/");
+
+    @GET("top-headlines")
+    Call<mainNews>getNews (
+            @Query("country") String country,
+            @Query("pageSize") int pagesize,
+            @Query("apiKey") String apikey
+    );
+
+    @GET("top-headlines")
+    Call<mainNews>getCategoryNews (
+            @Query("country") String country,
+            @Query("category") String category,
+            @Query("pageSize") int pagesize,
+            @Query("apiKey") String apikey
+    );
+}
+
+java page 3- apiutilities ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+public class ApiUtilities {
+
+  private static Retrofit retrofit = null;
+
+  public  static ApiInterface getApiInterface()
+  {
+
+    if(retrofit==null){
+      retrofit=new  Retrofit.Builder().baseUrl(ApiInterface.BASE_URL).addConverterFactory(GsonConverterFactory.create())
+              .build();
+    }
+    return retrofit.create(ApiInterface.class);
+  }
+
+}
+
+java page 4- entertainment fragment///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class EntertainmentFragment extends Fragment {
+
+
+    String api= "fe8d4a36c3c54a99929a18866abebeed";
+    ArrayList<ModelClass> modelClassArrayList;
+    Adapter adapter;
+    String country="in";
+    private RecyclerView recyclerViewofEntertainment;
+    private String category="science";
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.sciencefragment,null);
+
+        recyclerViewofEntertainment=v.findViewById(R.id.recycleviewofentertainment);
+        modelClassArrayList=new ArrayList<>();
+        recyclerViewofEntertainment.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter=new Adapter(getContext(),modelClassArrayList);
+        recyclerViewofEntertainment.setAdapter(adapter);
+
+        findNews();
+
+        return v;
+    }
+
+    private void findNews() {
+
+
+        ApiUtilities.getApiInterface().getCategoryNews(country,category,100,api).enqueue(new Callback<mainNews>() {
+            @Override
+            public void onResponse(Call<mainNews> call, Response<mainNews> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<mainNews> call, Throwable t) {
+
+            }
+        });
+
+
+    }
+
+}
+
+
+java page 5- healthfragment///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class HealthFragment extends Fragment {
+
+    String api= "fe8d4a36c3c54a99929a18866abebeed";
+    ArrayList<ModelClass> modelClassArrayList;
+    Adapter adapter;
+    String country="in";
+    private RecyclerView recyclerViewofhealth;
+    private String category="health";
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.healthfragment,null);
+
+        recyclerViewofhealth=v.findViewById(R.id.recycleviewofhealth);
+        modelClassArrayList=new ArrayList<>();
+        recyclerViewofhealth.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter=new Adapter(getContext(),modelClassArrayList);
+        recyclerViewofhealth.setAdapter(adapter);
+
+        findNews();
+
+        return v;
+    }
+
+    private void findNews() {
+
+
+        ApiUtilities.getApiInterface().getCategoryNews(country,category,100,api).enqueue(new Callback<mainNews>() {
+            @Override
+            public void onResponse(Call<mainNews> call, Response<mainNews> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<mainNews> call, Throwable t) {
+
+            }
+        });
+
+
+    }
+
+}
+
+
+java page 6- homefragment///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class HomeFragment extends Fragment {
+
+    String api= "fe8d4a36c3c54a99929a18866abebeed";
+    ArrayList<ModelClass> modelClassArrayList;
+    Adapter adapter;
+    String country="in";
+    private RecyclerView recyclerViewofhome;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.homefragment,null);
+
+        recyclerViewofhome=v.findViewById(R.id.recycleviewofhome);
+        modelClassArrayList=new ArrayList<>();
+        recyclerViewofhome.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter=new Adapter(getContext(),modelClassArrayList);
+        recyclerViewofhome.setAdapter(adapter);
+
+        findNews();
+
+        return v;
+    }
+
+    private void findNews() {
+
+        ApiUtilities.getApiInterface().getNews(country,100,api).enqueue(new Callback<mainNews>() {
+            @Override
+            public void onResponse(Call<mainNews> call, Response<mainNews> response) {
+                if (response.isSuccessful()){
+                    modelClassArrayList.addAll(response.body().getArticles());
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<mainNews> call, Throwable t) {
+
+            }
+        });
+
+
+    }
+}
+
+
+java page 7- mainactivity ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+package com.google.com.newsblock;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.viewpager.widget.ViewPager;
+
+import android.os.Bundle;
+
+import com.google.android.material.tabs.TabItem;
+import com.google.android.material.tabs.TabLayout;
+
+public class MainActivity extends AppCompatActivity {
+
+
+    TabLayout tabLayout;
+    TabItem mhome,mscience,mhealth,mtech,mentertainment,msports;
+    PagerAdapter pagerAdapter;
+    Toolbar mtoolbar;
+
+    String api= "fe8d4a36c3c54a99929a18866abebeed";
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mtoolbar= findViewById(R.id.toolbar);
+        setSupportActionBar(mtoolbar);
+
+        mhome=findViewById(R.id.home);
+        mscience=findViewById(R.id.science);
+        msports=findViewById(R.id.sports);
+        mtech=findViewById(R.id.technology);
+        mentertainment=findViewById(R.id.entertainment);
+        mhealth =findViewById(R.id.health);
+
+
+        ViewPager viewPager= findViewById(R.id.fragmentcontainer);
+        tabLayout= findViewById(R.id.include);
+
+        /* Set the pager adapter first */
+        pagerAdapter = new PagerAdapter(getSupportFragmentManager(),6);
+        viewPager.setAdapter(pagerAdapter);
+
+
+        /* swipe option by tab feature */
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+                if(tab.getPosition()==0 || tab.getPosition()==1 ||tab.getPosition()==2 ||tab.getPosition()==3 ||tab.getPosition()==4 ||tab.getPosition()==5 ){
+                    pagerAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+
+    }
+}
+
+java page 8- mainnews ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import java.util.ArrayList;
+
+public class mainNews {
+
+    private  String status;
+    private  String totalResults;
+    private ArrayList<ModelClass > articles;
+
+    public mainNews(String status, String totalResults, ArrayList<ModelClass> articles) {
+        this.status = status;
+        this.totalResults = totalResults;
+        this.articles = articles;
+    }
+
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getTotalResults() {
+        return totalResults;
+    }
+
+    public void setTotalResults(String totalResults) {
+        this.totalResults = totalResults;
+    }
+
+    public ArrayList<ModelClass> getArticles() {
+        return articles;
+    }
+
+    public void setArticles(ArrayList<ModelClass> articles) {
+        this.articles = articles;
+    }
+}
+
+java page 9- modelclass ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+public class ModelClass {
+
+    private String author,title,description,url,urlToImage,publishedAt;
+
+    public ModelClass(String author, String title, String description, String url, String urlToImage, String publishedAt) {
+        this.author = author;
+        this.title = title;
+        this.description = description;
+        this.url = url;
+        this.urlToImage = urlToImage;
+        this.publishedAt = publishedAt;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUrlToImage() {
+        return urlToImage;
+    }
+
+    public void setUrlToImage(String urlToImage) {
+        this.urlToImage = urlToImage;
+    }
+
+    public String getPublishedAt() {
+        return publishedAt;
+    }
+
+    public void setPublishedAt(String publishedAt) {
+        this.publishedAt = publishedAt;
+    }
+}
+
+
+java page 10- pageradapter ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+
+public class PagerAdapter extends FragmentPagerAdapter {
+
+    int tabcount;
+
+    public PagerAdapter(@NonNull FragmentManager fm, int behavior) {
+        super(fm, behavior);
+        tabcount=behavior;
+    }
+
+
+    @NonNull
+    @Override
+    public Fragment getItem(int position) {
+        switch (position)
+        {
+            case 0:
+                return new HomeFragment();
+            case 1:
+                return new HealthFragment();
+            case 2:
+                return new SportsFragment();
+            case 3:
+                return new ScienceFragment();
+            case 4:
+                return new EntertainmentFragment();
+            case 5:
+                return new TechFragment();
+
+            default:
+                return null;
+
+
+        }
+    }
+
+    @Override
+    public int getCount() {
+        return tabcount;
+    }
+}
+
+
+
+java page 11- science fregmant///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class ScienceFragment extends Fragment {
+
+
+
+    String api= "fe8d4a36c3c54a99929a18866abebeed";
+    ArrayList<ModelClass> modelClassArrayList;
+    Adapter adapter;
+    String country="in";
+    private RecyclerView recyclerViewofscience;
+    private String category="science";
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.sciencefragment,null);
+
+        recyclerViewofscience=v.findViewById(R.id.recycleviewofscience);
+        modelClassArrayList=new ArrayList<>();
+        recyclerViewofscience.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter=new Adapter(getContext(),modelClassArrayList);
+        recyclerViewofscience.setAdapter(adapter);
+
+        findNews();
+
+        return v;
+    }
+
+    private void findNews() {
+
+
+        ApiUtilities.getApiInterface().getCategoryNews(country,category,100,api).enqueue(new Callback<mainNews>() {
+            @Override
+            public void onResponse(Call<mainNews> call, Response<mainNews> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<mainNews> call, Throwable t) {
+
+            }
+        });
+
+
+    }
+
+}
+
+
+
+
+
+java page 12- sportsfregmant///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class SportsFragment extends Fragment {
+
+
+    String api= "fe8d4a36c3c54a99929a18866abebeed";
+    ArrayList<ModelClass> modelClassArrayList;
+    Adapter adapter;
+    String country="in";
+    private RecyclerView recyclerViewofsports;
+    private String category="sports";
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.sportsfragment,null);
+
+        recyclerViewofsports=v.findViewById(R.id.recycleviewofsports);
+        modelClassArrayList=new ArrayList<>();
+        recyclerViewofsports.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter=new Adapter(getContext(),modelClassArrayList);
+        recyclerViewofsports.setAdapter(adapter);
+
+        findNews();
+
+        return v;
+    }
+
+    private void findNews() {
+
+
+        ApiUtilities.getApiInterface().getCategoryNews(country,category,100,api).enqueue(new Callback<mainNews>() {
+            @Override
+            public void onResponse(Call<mainNews> call, Response<mainNews> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<mainNews> call, Throwable t) {
+
+            }
+        });
+
+
+    }
+
+}
+
+
+
+java page 13- techfregmant///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class TechFragment extends Fragment {
+
+
+    String api= "fe8d4a36c3c54a99929a18866abebeed";
+    ArrayList<ModelClass> modelClassArrayList;
+    Adapter adapter;
+    String country="in";
+    private RecyclerView recyclerViewoftech;
+    private String category="science";
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.technologyfragment,null);
+
+        recyclerViewoftech=v.findViewById(R.id.recycleviewoftechnology);
+        modelClassArrayList=new ArrayList<>();
+        recyclerViewoftech.setLayoutManager(new LinearLayoutManager(getContext()));
+        adapter=new Adapter(getContext(),modelClassArrayList);
+        recyclerViewoftech.setAdapter(adapter);
+
+        findNews();
+
+        return v;
+    }
+
+    private void findNews() {
+
+
+        ApiUtilities.getApiInterface().getCategoryNews(country,category,100,api).enqueue(new Callback<mainNews>() {
+            @Override
+            public void onResponse(Call<mainNews> call, Response<mainNews> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<mainNews> call, Throwable t) {
+
+            }
+        });
+
+
+    }
+
+}
+
+
+java page 14- viewholder///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
+
+public class ViewHolder extends RecyclerView.ViewHolder {
+
+    TextView mheading, mcontent, mauthor, mtime;
+    CardView cardView;
+    ImageView imageView;
+
+    public ViewHolder(@NonNull View itemView) {
+        super(itemView);
+
+        mheading = itemView.findViewById(R.id.mainheading);
+        mcontent = itemView.findViewById(R.id.content);
+        mauthor = itemView.findViewById(R.id.author);
+        mtime = itemView.findViewById(R.id.time);
+        imageView = itemView.findViewById(R.id.imageview);
+        cardView = itemView.findViewById(R.id.cardview);
+    }
+}
+
+
+java page 15- webview///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+package com.google.com.newsblock;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+public class webView extends AppCompatActivity {
+
+    Toolbar toolbar;
+    WebView webView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_web_view);
+
+        toolbar.findViewById(R.id.toolbar);
+        webView.findViewById(R.id.webview);
+        setSupportActionBar(toolbar);
+
+        Intent intent = getIntent();
+        String url=intent.getStringExtra("url");
+        webView.setWebViewClient(new WebViewClient());
+        webView.loadUrl(url);
+    }
+}
